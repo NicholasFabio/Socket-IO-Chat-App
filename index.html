@@ -1,0 +1,140 @@
+<html>
+    <head>
+        <!-- GET BOOTSRAP CDN -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    
+        <title> IO Chat App</title>
+
+        <style>
+            body{
+                margin-top: 25px;
+                
+            }
+            #messageContainer{
+                display: none; 
+            }
+        </style>
+    </head>
+    <body>
+        
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                            <strong>Holy guacamole!</strong> Welcome to the Simple Socket IO Chat.
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                </div>
+            </div>
+
+            <div class="row" id="userContainer" style="padding-top:15px;">
+                <div class = "col-md-12">
+                        <div class="card ">
+                            <div class="card-body">
+                                <form id="userForm">
+                                    <div class="form-group">
+                                        <label>Enter Username</label>
+                                        <input class="form-control" id="username">
+                                        <br/>
+                                        <button type="submit" class="btn btn-outline-primary">Connect</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div id="messageContainer" style="padding-top:15px;">
+                <div class="row">
+                    <div class = "col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h3> Online Users: </h3>
+                                <ul id="users" class="list-group">
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class = "col-md-8">
+                        <div class="card ">
+                            <div class="card-body">
+                                <div class="chat" id="chat">
+
+                                </div>
+                                <form id="messageForm">
+                                    <div class="form-group">
+                                        <h5> Send Message</h5>
+                                        <textarea class="form-control" id="message" rows="6"></textarea>
+                                        <br/>
+                                        <button type="submit" class="btn btn-outline-primary">Send Message</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(function(){
+                var socket = io.connect();
+                var $messageForm = $('#messageForm');
+                var $messageContainer= $('#messageContainer');
+                var $userForm = $('#userForm');
+                var $userContainer = $('#userContainer');
+                var $message = $('#message');
+                var $chat = $('#chat');
+                var $users = $('#users');
+                var $username= $('#username');
+
+                $messageForm.submit(function(e){
+                    // prevents page reloading
+                    e.preventDefault();
+                    // send message to server
+                    socket.emit('send message', $message.val());
+                    // Clear the message box
+                    $message.val('');
+                });
+
+                // Handle response from server for new messages
+                socket.on('new message',function(data){
+                    $chat.append('<div class="card card-body bg-light"> <b>'+ data.user +'</b> '+ data.msg +'</div><br>');
+                })
+
+                $userForm.submit(function(e){
+                    // prevents page reloading
+                    e.preventDefault();
+                    // send message to server for the new user connection
+                    socket.emit('new user', $username.val(),function(data){
+                        if(data){
+                            $userContainer.hide();
+                            $messageContainer.show();
+                        }
+                    });
+                    // Clear the message box
+                    $username.val('');
+                });           
+
+                // Handle response from server for the getting the users connected
+                socket.on('get users',function(data){
+                    var html ='';
+                    for(i=0; i < data.length ; i++){
+                        html += '<li class="list-group-item">'+ data[i] + '</li>';
+                    }
+                    $users.html(html);
+                });
+
+
+
+            });
+        </script>
+    </body>
+   
+</html>

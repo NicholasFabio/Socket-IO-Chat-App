@@ -1,0 +1,15 @@
+{
+  "name": "iochatapp",
+  "version": "1.0.0",
+  "description": "Client and Server Chat App",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nicholas Rader",
+  "license": "MIT",
+  "dependencies": {
+    "express": "*",
+    "socket.io": "^2.2.0"
+  }
+}
